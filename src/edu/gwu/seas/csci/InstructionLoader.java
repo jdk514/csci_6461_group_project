@@ -394,7 +394,6 @@ public class InstructionLoader implements Loader {
 				break;
 			case FOUR:
 				logger.debug("Executing parse logic on for case InsructionFormat.FOUR.");
-				// Immed portion is optional
 				try {
 					address = Byte.parseByte(temp.substring(4, 5));
 				} catch (NumberFormatException e) {

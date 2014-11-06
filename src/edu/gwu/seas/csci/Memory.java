@@ -54,7 +54,8 @@ public class Memory {
 
 	/**
 	 * @param address
-	 * @return
+	 *            The address specified on the memory block to fetch.
+	 * @return an 8 word memory block that contains the specified address.
 	 */
 	public Word[] getMemoryBlock(int address) {
 		int tag = (address / 8) * 8;
@@ -75,7 +76,7 @@ public class Memory {
 		if (address > length)
 			throw new IndexOutOfBoundsException();
 		Word[] words = getMemoryBlock(address);
-		return words[address%8];
+		return words[address % 8];
 	}
 
 	/**

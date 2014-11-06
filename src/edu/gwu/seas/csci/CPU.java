@@ -59,7 +59,8 @@ public class CPU implements CPUConstants {
 		/**
 		 * Adds a cache line to the cache. If the cache is full, it evicts a
 		 * cache line at random to make room for the new cache line. Will not
-		 * evict a "dirty" cache line.
+		 * evict a "dirty" cache line, i.e., a cache line with a write pending
+		 * in the write buffer.
 		 * 
 		 * @param line
 		 *            The line to add to the cache.
@@ -83,13 +84,13 @@ public class CPU implements CPUConstants {
 		}
 
 		/**
-		 * Locates the line_tag of the cache line containing a given address.
+		 * Locates the cache line containing a specified address.
 		 * 
 		 * @param address
 		 *            The address for which to find the corresponding cache
 		 *            line.
-		 * @return the line_tag of the cache line, or null if the address is not
-		 *         in the cache.
+		 * @return the cache line containing the specified address, or null if
+		 *         the address is not in the cache.
 		 */
 		private L1CacheLine getCacheLine(int address) {
 			L1CacheLine line = null;
@@ -103,11 +104,12 @@ public class CPU implements CPUConstants {
 		}
 
 		/**
-		 * Checks the cache for the contents of a given memory address. Iterates
-		 * through the tags of each line in the cache, and checks whether the
-		 * value of the search address is between the value of the tag line
-		 * address and the tag line address plus the number of words in the
-		 * cache line, inclusive.
+		 * Checks the cache for a specified memory address and returns the Word
+		 * at the specified address location, or null if the specified address
+		 * is not in the cache. Iterates through the tags of each line in the
+		 * cache, and checks whether the value of the search address is between
+		 * the value of the tag line address and the tag line address plus the
+		 * number of words in the cache line, inclusive.
 		 * 
 		 * @param address
 		 *            The memory address to search for in the cache, i.e., the
@@ -133,18 +135,16 @@ public class CPU implements CPUConstants {
 		}
 
 		/**
-		 * Updates the writes bitmask on the cache line that contains the
+		 * Updates the writes counter on the cache line that contains the
 		 * specified address. If the value of the add parameter is true, this
-		 * method adds the value of the line_tag parameter to the cache line
-		 * writes bitmask, otherwise it subtracts the value of the line_tag
-		 * parameter from the cache line writes bitmask.
+		 * method increments the value of the cache line's writes counter,
+		 * otherwise it decrements the value of the cache line's writes counter.
 		 * 
 		 * @param address
-		 *            The address whose cache line writes bitmask to update.
+		 *            The address whose cache line writes counter to update.
 		 * @param add
-		 *            Whether to add or subtract the value of line_tag from the
-		 *            cache line writes bitmask.
-		 * @param line_tag
+		 *            Whether to increment or decrement the value of the cache
+		 *            line writes counter.
 		 */
 		private void updateWrites(int address, boolean add) {
 			L1CacheLine line = l1_cache.getCacheLine(address);
@@ -159,15 +159,14 @@ public class CPU implements CPUConstants {
 		 * <li>Cache Miss.</li>
 		 * </ol>
 		 * For a cache hit, this method updates the value in the cache with the
-		 * value of the word parameter, sets the appropriate dirty line_tag on
-		 * the cache line, and adds the value of the word parameter to the write
-		 * buffer. For a cache miss, this method returns false.
+		 * value of the word parameter, increments the the cache line writes
+		 * counter, and adds an element to the write buffer. For a cache miss,
+		 * this method returns false.
 		 * 
 		 * @param word
 		 *            The content to write to the cache.
 		 * @param address
-		 *            The main memory address of the content to write to the
-		 *            cache.
+		 *            The memory address of the content to write.
 		 * @return true if a cache hit; otherwise false.
 		 */
 		private boolean write(Word word, int address) {
@@ -192,7 +191,7 @@ public class CPU implements CPUConstants {
 		}
 
 		/**
-		 * @return the cache
+		 * @return the L1 cache.
 		 */
 		L1CacheLine[] getCache() {
 			return cache;
@@ -202,8 +201,8 @@ public class CPU implements CPUConstants {
 	/**
 	 * Represents the structure of each line in the L1 cache. We have not been
 	 * directed to use a specific cache line structure, so for our case each
-	 * line contains 1 address tag, 6 Words, and 1 writes bitmask. This puts our
-	 * total L1 cache contents at 96 Words (16 lines x 6 words per line).
+	 * line contains 1 address tag, 8 Words, and 1 writes counter. This puts our
+	 * total L1 cache contents at 128 Words (16 lines x 8 words per line).
 	 */
 	static class L1CacheLine {
 
@@ -213,18 +212,17 @@ public class CPU implements CPUConstants {
 		public static final int WORDS_PER_LINE = 8;
 
 		/**
-		 * The main memory address of this cache line.
+		 * The first memory address of the memory block on this cache line.
 		 */
 		private int tag;
 
 		/**
-		 * The contents of the main memory location identified by the tag
-		 * address.
+		 * The main memory block located on this cache line.
 		 */
 		private Word[] words;
 
 		/**
-		 * A bitmask for cache operations.
+		 * A counter for cache to memory synchronization operations.
 		 */
 		private byte writes;
 
@@ -232,8 +230,12 @@ public class CPU implements CPUConstants {
 		 * Creates a new cache line from the given parameters.
 		 * 
 		 * @param address
+		 *            The address of the first element in the memory block.
 		 * @param block
+		 *            The 8 Word memory block located on this cache line.
 		 * @param writes
+		 *            The counter that indicates how many writes this cache line
+		 *            has pending in the write buffer.
 		 */
 		private L1CacheLine(int address, Word[] block, byte writes) {
 			this.tag = address;
@@ -242,9 +244,9 @@ public class CPU implements CPUConstants {
 		}
 
 		/**
-		 * @return the writes
+		 * @return the writes counter for this cache line.
 		 */
-		byte getFlags() {
+		byte getWrites() {
 			return writes;
 		}
 
@@ -256,17 +258,21 @@ public class CPU implements CPUConstants {
 		}
 
 		/**
-		 * @return the words
+		 * @param index
+		 *            The array index of the Word to return from the memory
+		 *            block of this cache line.
+		 * @return the Word at the specified index of the memory block on this
+		 *         cache line.
 		 */
 		private Word getWord(int index) {
 			return words[index];
 		}
 
 		/**
-		 * Checks to see if a value in the cache line differs from the value
-		 * that was originally fetched from memory. This would occur if the CPU
-		 * has written to the cache and the memory controller has not yet
-		 * updated the value in main memory,
+		 * Tests if a value in the cache line differs from the value that was
+		 * originally fetched from memory. This would occur if the CPU has
+		 * written to the cache and the memory controller has not yet updated
+		 * the value in main memory,
 		 * 
 		 * @return true if a value in the cache line differs from that in its
 		 *         corresponding address location in main memory.
@@ -276,8 +282,13 @@ public class CPU implements CPUConstants {
 		}
 
 		/**
+		 * Puts a word at a specified index in the memory block array on this
+		 * cache line.
+		 * 
 		 * @param word
-		 * @param line_tag
+		 *            The word to set.
+		 * @param index
+		 *            The index in the memory block array on this cache line.
 		 */
 		private void setWord(Word word, int index) {
 			words[index] = word;
@@ -295,17 +306,13 @@ public class CPU implements CPUConstants {
 		}
 
 		/**
-		 * Updates the writes bitmask. If the value of the add parameter is
-		 * true, this method adds the value of the line_tag parameter to the
-		 * cache line writes bitmask, otherwise it subtracts the value of the
-		 * line_tag parameter from the cache line writes bitmask.
+		 * Updates the writes counter. If the value of the add parameter is
+		 * true, this method increments the value of the writes counter,
+		 * otherwise it decrements the value of the writes counter.
 		 * 
 		 * @param add
-		 *            Whether to add or subtract the value of line_tag from the
-		 *            cache line writes bitmask.
-		 * @param line_tag
-		 *            The value to add or subtract from the cache line writes
-		 *            bitmask.
+		 *            Whether to increment (true) or decrement (false) the value
+		 *            of the writes counter.
 		 */
 		private void updateWrites(boolean add) {
 			if (add)
@@ -389,7 +396,12 @@ public class CPU implements CPUConstants {
 
 			/**
 			 * @param address
+			 *            The memory address to write to in main memory.
 			 * @param word
+			 *            The word to write to main memory.
+			 * @param line_tag
+			 *            The tag identifier of the cache line that created this
+			 *            element.
 			 */
 			private WriteBufferElement(int address, Word word, int line_tag) {
 				this.address = address;
@@ -402,17 +414,6 @@ public class CPU implements CPUConstants {
 			 */
 			public int getAddress() {
 				return address;
-			}
-
-			public byte getIndex() {
-				return (byte) (address - line_tag);
-			}
-
-			/**
-			 * @return the line_tag
-			 */
-			public int getLineTag() {
-				return line_tag;
 			}
 
 			/**
@@ -444,14 +445,20 @@ public class CPU implements CPUConstants {
 				4);
 
 		/**
-		 * Adds a dirty cache value to the write buffer for synchronization with
-		 * main memory. If the write_buffer is full, the add is blocked and the
-		 * CPU will stall until there is room in the write_buffer.
+		 * Creates a WriteBufferElement object from the specified parameters and
+		 * adds it to the write buffer for synchronization with main memory. If
+		 * the write_buffer is full, the add is blocked and the CPU will stall
+		 * until there is room in the write_buffer.
 		 * 
 		 * @param word
+		 *            The word to add to the element in the write buffer.
 		 * @param address
+		 *            The address of the word to add to teh element in the write
+		 *            buffer.
 		 * @param line_tag
-		 * @return
+		 *            The tag identifier of the cache line that contains the
+		 *            word and address added to the write buffer.
+		 * @return true if the element is successfully added; false otherwise.
 		 */
 		private boolean addToBuffer(Word word, int address, int line_tag) {
 			WriteBufferElement contents = new WriteBufferElement(address, word,
@@ -476,8 +483,6 @@ public class CPU implements CPUConstants {
 		}
 
 		/**
-		 * Returns true if this WriteBuffer contains no elements.
-		 * 
 		 * @return true if this WriteBuffer contains no elements.
 		 */
 		private boolean isEmpty() {
@@ -486,8 +491,9 @@ public class CPU implements CPUConstants {
 
 		/**
 		 * Retrieves and writes the head of this FIFO queue to main memory.
-		 * Updates the line_tag on the cache line to reflect the synchronization
-		 * between the cache and main memory of the address that was written to.
+		 * Updates the write counter on the cache line to reflect the
+		 * synchronization between the cache and main memory of the address that
+		 * was written to.
 		 * 
 		 * @return true if successful, otherwise false;
 		 */
@@ -650,7 +656,6 @@ public class CPU implements CPUConstants {
 			InstructionLoader faultLoader = new InstructionLoader(
 					FAULT_INSTR_FILENAME, false);
 			faultLoader.load(FAULT_AND_TRAP_START_ADDR);
-			
 
 		} catch (NullPointerException | IllegalArgumentException
 				| ParseException e) {
@@ -680,13 +685,13 @@ public class CPU implements CPUConstants {
 	 * 
 	 * @param address
 	 *            The address in main memory to target.
-	 * @param override
+	 * @param bypass
 	 *            Skip the cache check if true.
 	 * 
 	 * @return the contents of the specified address.
 	 */
-	private Word readFromMemory(int address, boolean override) {
-		// Check for illegal address
+	private Word readFromMemory(int address, boolean bypass) {
+		logger.debug("Testing for illegal memory address.");
 		if ((address < 0) || (address > MAX_ADDR)) {
 			// PC and MSR are saved to memory
 			Word orig_PC = readFromMemory(2);
@@ -700,11 +705,11 @@ public class CPU implements CPUConstants {
 			// Execute fault error routine
 			executeInstruction("continue");
 		}
-
 		Word word = null;
-		if (override)
+		if (bypass) {
+			logger.debug("Cache bypassed.  Writing directly to main memory.");
 			word = readFromMainMemory(address);
-		else {
+		} else {
 			word = l1_cache.read(address);
 			if (word != null)
 				return word;
@@ -740,15 +745,10 @@ public class CPU implements CPUConstants {
 	 */
 	public void setReg(String destName, BitSet sourceSet, int sourceBits) {
 		if (regMap.containsKey(destName)) {
-			// regMap.put(regName, bitValue);
-
 			Register destination = regMap.get(destName);
 			Utils.bitsetDeepCopy(sourceSet, sourceBits, destination,
 					destination.getNumBits());
-
-			// update the GUI
 			Computer_GUI.update_register(destName, getReg(destName));
-
 		}
 	}
 
