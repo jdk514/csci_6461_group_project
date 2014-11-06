@@ -55,15 +55,13 @@ public class Computer_GUI extends JFrame implements ActionListener {
 	private JButton reset;
 	private InstructionLoader fileloader = new InstructionLoader();
 	private CPU cpu;
-	private static HashMap<String, JRadioButton[]> Registers; // map of
-																// registers on
-																// gui
+	private static HashMap<String, JRadioButton[]> Registers; 
 	private HashMap<String, String> exec_command;
 
 	/**
 	 * Create the frame.
 	 */
-	public Computer_GUI(CPU cpu) {
+	public Computer_GUI(final CPU cpu) {
 		this.cpu = cpu;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		contentPane = new JPanel();
