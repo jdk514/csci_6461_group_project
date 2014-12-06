@@ -1857,7 +1857,8 @@ public class CPU implements CPUConstants {
 				logger.debug("case 7");
 				// MDR -> OP1 and index(EA+1) -> MAR
 				setReg(OP1, getReg(MDR));
-				setReg(MAR, regMap.get(EA));
+				int EAp1 = Utils.convertToInt(getReg(EA), getReg(EA).getNumBits());
+				setReg(MAR, Utils.intToBitSet(++EAp1, getReg(EA).getNumBits()), getReg(EA).getNumBits());
 				cycle_count++;
 				prog_step++;
 				break;
@@ -1865,47 +1866,43 @@ public class CPU implements CPUConstants {
 			//Enter into Vector Loop
 			case 8:
 				logger.debug("case 8");
-				int pipe_stage = 1;
-				for(int index=1; index<Utils.convertToInt(regMap.get(R), getReg(R).getNumBits())-1; index++) {
-					switch (pipe_stage) {
+				for(int index=0; index<Utils.convertToUnsignedByte(regMap.get(R), getReg(R).getNumBits())-1; index++) {
+					logger.debug("hit the loop");
+					switch (1) {
 					case 1:
 						// Mem(MAR) -> MDR
 						mar_addr = Utils.convertToInt(regMap.get(MAR), getReg(MAR)
 								.getNumBits());
 						setReg(MDR, this.readFromMemory(mar_addr + index));
 						cycle_count++;
-						break;
 						
 					case 2:
 						//MDR -> OP2 and index(EA) -> MAR
 						setReg(OP2, getReg(MDR));
 						setReg(MAR, regMap.get(EA));
 						cycle_count++;
-						break;
 						
 					case 3:
 						//ALU add and Mem(MAR) -> MDR
 						alu.AMR();
 						mar_addr = Utils.convertToInt(regMap.get(MAR), getReg(MAR)
 								.getNumBits());
-						setReg(MDR, this.readFromMemory(mar_addr + index));
+						setReg(MDR, this.readFromMemory(mar_addr + index + 1));
 						cycle_count++;
-						break;
 						
 					case 4:
 						//EA -> MAR and MDR -> OP1
 						setReg(MAR, regMap.get(EA));
 						setReg(OP1, getReg(MDR));
 						cycle_count++;
-						break;
 						
 					case 5:
 						//Result -> MDR and EA+1 -> MAR
 						setReg(MDR, getReg(RESULT));
 						this.writeToMemory(Utils.registerToWord(getReg(RESULT), 18), Utils.convertToInt(regMap.get(MAR), getReg(MAR).getNumBits()) + index);
-						setReg(MAR, regMap.get(EA + 1));
+						EAp1 = Utils.convertToInt(getReg(EA), getReg(EA).getNumBits());
+						setReg(MAR, Utils.intToBitSet(++EAp1, getReg(EA).getNumBits()),getReg(EA).getNumBits());
 						cycle_count++;
-						break;
 						
 					}	
 				}
@@ -1917,7 +1914,7 @@ public class CPU implements CPUConstants {
 				//Mem(MAR) -> MDR
 				mar_addr = Utils.convertToInt(regMap.get(MAR), getReg(MAR)
 						.getNumBits());
-				setReg(MDR, this.readFromMemory(mar_addr + Utils.convertToInt(regMap.get(R), getReg(R).getNumBits())-1));
+				setReg(MDR, this.readFromMemory(mar_addr + Utils.convertToUnsignedByte(regMap.get(R), getReg(R).getNumBits())-1));
 				cycle_count++;
 				prog_step++;
 				break;
@@ -1951,7 +1948,7 @@ public class CPU implements CPUConstants {
 				//Result -> MDR
 				setReg(MDR, getReg(RESULT));
 				this.writeToMemory(Utils.registerToWord(getReg(RESULT), 18), Utils.convertToInt(regMap.get(MAR), getReg(MAR).getNumBits()) + 
-						Utils.convertToInt(regMap.get(R), getReg(R).getNumBits())-1);
+						Utils.convertToUnsignedByte(regMap.get(R), getReg(R).getNumBits())-1);
 				cycle_count++;
 				prog_step = 0;
 				break;
