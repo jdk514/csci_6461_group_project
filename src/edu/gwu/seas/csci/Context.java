@@ -56,6 +56,8 @@ public class Context {
 		instructionFormats.put("JCC", InstructionFormat.ONE);
 		instructionFormats.put("SOB", InstructionFormat.ONE);
 		instructionFormats.put("JGE", InstructionFormat.ONE);
+		instructionFormats.put("VADD", InstructionFormat.ONE);
+		instructionFormats.put("VSUB", InstructionFormat.ONE);
 
 		// OPCODE X,ADDR[,I]
 		instructionFormats.put("LDX", InstructionFormat.TWO);
@@ -125,6 +127,11 @@ public class Context {
 		opcodeClasses.put("AND", InstructionClass.XY_ARITH_LOGIC);
 		opcodeClasses.put("ORR", InstructionClass.XY_ARITH_LOGIC);
 		opcodeClasses.put("NOT", InstructionClass.XY_ARITH_LOGIC);
+		
+		// Vector Instructions
+		opcodeClasses.put("VADD", InstructionClass.LD_STR);
+		opcodeClasses.put("VSUB", InstructionClass.LD_STR);
+		
 
 		// Shift/rotate instructions
 		opcodeClasses.put("SRC", InstructionClass.SHIFT);
@@ -171,6 +178,10 @@ public class Context {
 		opCodeBytes.put("AND", OpCodesList.AND);
 		opCodeBytes.put("ORR", OpCodesList.ORR);
 		opCodeBytes.put("NOT", OpCodesList.NOT);
+		
+		// Vector instructions
+		opCodeBytes.put("VADD", OpCodesList.VADD);
+		opCodeBytes.put("VSUB", OpCodesList.VSUB);
 
 		// Shift/rotate instructions
 		opCodeBytes.put("SRC", OpCodesList.SRC);
@@ -217,6 +228,10 @@ public class Context {
 		opCodeStrings.put(OpCodesList.AND, "AND");
 		opCodeStrings.put(OpCodesList.ORR, "ORR");
 		opCodeStrings.put(OpCodesList.NOT, "NOT");
+		
+		// Vector instructions
+		opCodeStrings.put(OpCodesList.VADD, "VADD");
+		opCodeStrings.put(OpCodesList.VSUB, "VSUB");
 
 		// Shift/rotate instructions
 		opCodeStrings.put(OpCodesList.SRC, "SRC");

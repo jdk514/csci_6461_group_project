@@ -266,6 +266,9 @@ public class InstructionLoader implements Loader {
 		try {
 			logger.debug("Reading the opcode key string from the instruction string.");
 			String opcodeKeyString = temp.substring(0, 3).trim();
+			if (opcodeKeyString.equals("VAD") || opcodeKeyString.equals("VSU")) {
+				opcodeKeyString = temp.substring(0, 4).trim();
+			}
 			logger.debug("Determining the instruction's format from the computer context.");
 			Context.InstructionFormat instruction_format = context
 					.getInstructionFormats().get(opcodeKeyString);
@@ -287,6 +290,9 @@ public class InstructionLoader implements Loader {
 				logger.debug("Executing parse logic on for case InsructionFormat.ONE.");
 				if (opcodeKeyString.equals("JZ"))
 					general_register = Byte.parseByte(temp.substring(3, 4));
+				else if (opcodeKeyString.equals("VADD") || opcodeKeyString.equals("VSUB")) {
+					general_register = Byte.parseByte(temp.substring(5, 6));
+				}
 				else
 					general_register = Byte.parseByte(temp.substring(4, 5));
 
