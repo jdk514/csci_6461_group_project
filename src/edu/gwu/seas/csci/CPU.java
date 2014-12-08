@@ -1858,7 +1858,7 @@ public class CPU implements CPUConstants {
 				// MDR -> OP1 and index(EA+1) -> MAR
 				setReg(OP1, getReg(MDR));
 				int EAp1 = Utils.convertToInt(getReg(EA), getReg(EA).getNumBits());
-				setReg(MAR, this.readFromMemory(++EAp1));
+				setReg(MAR, this.readFromMemory(EAp1+1));
 				cycle_count++;
 				prog_step++;
 				break;
@@ -1879,7 +1879,7 @@ public class CPU implements CPUConstants {
 					case 2:
 						//MDR -> OP2 and index(EA) -> MAR
 						setReg(OP2, getReg(MDR));
-						setReg(MAR, regMap.get(EA));
+						setReg(MAR, this.readFromMemory(Utils.convertToInt(regMap.get(EA), 18)));
 						cycle_count++;
 						
 					case 3:
