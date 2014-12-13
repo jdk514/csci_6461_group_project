@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.NumberFormatException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -273,8 +274,29 @@ public class InstructionLoader implements Loader {
 			Context.InstructionFormat instruction_format = context
 					.getInstructionFormats().get(opcodeKeyString);
 			logger.debug("Testing for a valid InstructionClass object.");
-			if (instruction_format == null)
-				return null;
+			if (instruction_format == null) {
+				if (!(opcodeKeyString.trim().isEmpty())) {
+					/*
+					 * Illegal opcode has occurred
+					 * 
+					 * Registers PC and MSR are saved to memory. Next, the fault error routine.
+					 */
+					
+					Word pc = Utils.registerToWord(cpu.getReg(CPU.PC), 12);
+					cpu.writeToMemory(pc, 4);
+					Word msr = Utils.registerToWord(cpu.getReg(CPU.PC), 18);
+					cpu.writeToMemory(msr, 5);
+					
+					//Change PC to fault error routine
+					Word faultRoutine = cpu.readFromMemory(1);
+					cpu.setReg(CPU.PC, faultRoutine); //Is this ok...just truncate least important?
+					
+					//Execute fault error routine
+					cpu.executeInstruction("continue");
+				} else {
+					return null;
+				}
+			}
 
 			String instruction_elements[] = temp.split(",");
 			for (int i = 0; i < instruction_elements.length; i++)
@@ -471,8 +493,23 @@ public class InstructionLoader implements Loader {
 				break;
 			}
 			return word;
+		} catch (NumberFormatException e) {
+			logger.error("Illegal Memory Address.", e);
+			
+			// PC and MSR are saved to memory
+			Word orig_PC = cpu.readFromMemory(2);
+			cpu.writeToMemory(orig_PC, 4);
+			Word msr = Utils.registerToWord(cpu.getReg(CPU.PC), 18);
+			cpu.writeToMemory(msr, 5);
+			// Change PC to fault error routine
+			Word faultRoutine = cpu.readFromMemory(1);
+			cpu.setReg(CPU.PC, faultRoutine); // Is this ok...just truncate least
+										// important?
+			// Execute fault error routine
+			cpu.executeInstruction("continue");
+			return null;
 		} catch (Exception e) {
-			logger.error("Illegal Operation Code.", e);
+			logger.error("Illegal Action.", e);
 			return null;
 		}
 	}
