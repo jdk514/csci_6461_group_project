@@ -1,0 +1,168 @@
+//Vector Test Program
+//Prints out values for two vectors
+//Sets up the two vectors in memory
+//Adds then displays the result of the VADD
+LDA 0,0,86
+OUT 0,1
+LDA 0,0,101
+OUT 0,1
+LDA 0,0,99
+OUT 0,1
+LDA 0,0,116
+OUT 0,1
+LDA 0,0,111
+OUT 0,1
+LDA 0,0,114
+OUT 0,1
+LDA 0,0,32
+OUT 0,1
+LDA 0,0,49
+OUT 0,1
+LDA 0,0,58
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+//Display contents of vector 1
+//Prints "Vector 1: 1 2 3 4 5"
+LDA 0,0,49
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDA 0,0,50
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDA 0,0,51
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDA 0,0,52
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDA 0,0,53
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+//Display Contents of Vector 2
+//Prints "Vecotr 2: 2 3 4 5 1"
+LDA 0,0,86
+OUT 0,1
+LDA 0,0,101
+OUT 0,1
+LDA 0,0,99
+OUT 0,1
+LDA 0,0,116
+OUT 0,1
+LDA 0,0,111
+OUT 0,1
+LDA 0,0,114
+OUT 0,1
+LDA 0,0,32
+OUT 0,1
+LDA 0,0,50
+OUT 0,1
+LDA 0,0,58
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDA 0,0,50
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDA 0,0,51
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDA 0,0,52
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDA 0,0,53
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDA 0,0,49
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+
+//Setup ASCII to binary conversion
+//Stores value 48 to convert single digit numbers into ascii values
+LDA 0,0,48
+STR 0,0,109
+
+//setup the vector addresses
+//Setup the Address that point to the vectors
+LDA 0,0,110
+STR 0,0,100
+LDA 0,0,115
+STR 0,0,101
+
+//Load values into the vectors
+//Put the Binary values into the expected memory locations
+//locations 110-114 represent vector 1
+//locations 115-119 represent vector 2
+LDA 0,0,1
+STR 0,0,110
+STR 0,0,119
+LDA 0,0,2
+STR 0,0,111
+STR 0,0,115
+LDA 0,0,3
+STR 0,0,112
+STR 0,0,116
+LDA 0,0,4
+STR 0,0,113
+STR 0,0,117
+LDA 0,0,5
+STR 0,0,114
+STR 0,0,118
+
+//Execute the vector
+LDA 0,0,5
+VADD 0,0,100
+
+//Print out results
+//Should return - 3 5 7 9 6
+LDA 0,0,82
+OUT 0,1
+LDA 0,0,101
+OUT 0,1
+LDA 0,0,115
+OUT 0,1
+LDA 0,0,117
+OUT 0,1
+LDA 0,0,108
+OUT 0,1
+LDA 0,0,116
+OUT 0,1
+LDA 0,0,115
+OUT 0,1
+LDA 0,0,58
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDR 0,0,110
+AMR 0,0,109
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDR 0,0,111
+AMR 0,0,109
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDR 0,0,112
+AMR 0,0,109
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDR 0,0,113
+AMR 0,0,109
+OUT 0,1
+LDA 0,0,10
+OUT 0,1
+LDR 0,0,114
+AMR 0,0,109
+OUT 0,1
