@@ -1826,6 +1826,7 @@ public class CPU implements CPUConstants {
 			break;
 			
 		case OpCodesList.VADD:
+		case OpCodesList.VSUB:
 			int mar_addr;
 			switch (prog_step) {
 			case 4:
@@ -1884,7 +1885,10 @@ public class CPU implements CPUConstants {
 						
 					case 3:
 						//ALU add and Mem(MAR) -> MDR
-						alu.AMR();
+						if(op_byte == OpCodesList.VADD)
+							alu.AMR();
+						else
+							alu.SMR();
 						mar_addr = Utils.convertToInt(regMap.get(MAR), getReg(MAR)
 								.getNumBits());
 						setReg(MDR, this.readFromMemory(mar_addr + index + 1));
@@ -1930,7 +1934,10 @@ public class CPU implements CPUConstants {
 			case 11:
 				logger.debug("case 11");
 				//ALU add
-				alu.AMR();
+				if(op_byte == OpCodesList.VADD)
+					alu.AMR();
+				else
+					alu.SMR();
 				cycle_count++;
 				prog_step++;
 				break;
