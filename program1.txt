@@ -32,7 +32,7 @@ AIR 1,100
 AIR 1,100
 AIR 1,100
 AIR 1,100              //R1 = 400 = starting address of number array
-LDA 2,0,4              //R2 will hold the number of input numbers to get from the user + 1
+LDA 2,0,19              //R2 will hold the number of input numbers to get from the user + 1
 
 //——————————————————————————————————————————————————————————————————————————————————————————
 //Outer loop of the entire input loop - prompts the user to enter a number to place
@@ -242,7 +242,7 @@ SIR 1,5                //Reset R1 to the beginning of the array ($400)
 LDA 0,0,0              //Clear R0
 ORR 0,1                //Transfer R1 to R0, R0 = start of array
 
-LDA 3,0,4              //R3 holds the number of array elements left to check
+LDA 3,0,19              //R3 holds the number of array elements left to check
               
 LDA 2,0,1               //R2 = closestDifference (want to initialize this to max val)           
 SRC 2,16,1,0            //Make R2 a high number (preferably the highest positive number)
